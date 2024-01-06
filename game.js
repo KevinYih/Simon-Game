@@ -1,79 +1,81 @@
-
-var buttonColours = ["red", "blue", "green", "yellow"];
-
-var gamePattern = [];
-var userClickedPattern = [];
-
-var started = false;
 var level = 0;
+var arrayClick = [];
+var arrayGame = [];
+var started = false;
+var arrayColor = ["green", "red", "yellow", "blue"];
 
-$(document).keypress(function() {
+$(document).keydown(function () {
   if (!started) {
-    $("#level-title").text("Level " + level);
-    nextSequence();
+    nextLevel();
     started = true;
   }
 });
 
-$(".btn").click(function() {
-
-  var userChosenColour = $(this).attr("id");
-  userClickedPattern.push(userChosenColour);
-
-  playSound(userChosenColour);
-  animatePress(userChosenColour);
-
-  checkAnswer(userClickedPattern.length-1);
+$(".btn").click(function (event) {
+  pressedKey(event.target.id);
+  playSound(event.target.id);
+  arrayClick.push(event.target.id);
+  checkArray();
 });
 
-function checkAnswer(currentLevel) {
+function pressedKey(color) {
+  $("#" + color).addClass("pressed");
 
-    if (gamePattern[currentLevel] === userClickedPattern[currentLevel]) {
-      if (userClickedPattern.length === gamePattern.length){
-        setTimeout(function () {
-          nextSequence();
-        }, 1000);
-      }
-    } else {
-      playSound("wrong");
-      $("body").addClass("game-over");
-      $("#level-title").text("Game Over, Press Any Key to Restart");
-
-      setTimeout(function () {
-        $("body").removeClass("game-over");
-      }, 200);
-
-      startOver();
-    }
-}
-
-
-function nextSequence() {
-  userClickedPattern = [];
-  level++;
-  $("#level-title").text("Level " + level);
-  var randomNumber = Math.floor(Math.random() * 4);
-  var randomChosenColour = buttonColours[randomNumber];
-  gamePattern.push(randomChosenColour);
-
-  $("#" + randomChosenColour).fadeIn(100).fadeOut(100).fadeIn(100);
-  playSound(randomChosenColour);
-}
-
-function animatePress(currentColor) {
-  $("#" + currentColor).addClass("pressed");
-  setTimeout(function () {
-    $("#" + currentColor).removeClass("pressed");
+  setTimeout(() => {
+    $("#" + color).removeClass("pressed");
   }, 100);
 }
 
-function playSound(name) {
-  var audio = new Audio("sounds/" + name + ".mp3");
+function playSound(color) {
+  var audio = new Audio("sounds/" + color + ".mp3");
   audio.play();
 }
 
-function startOver() {
-  level = 0;
-  gamePattern = [];
+function nextLevel() {
+  arrayClick = [];
+  level++;
+  $("h1").text("levle " + level);
+  var keyRandom = Math.floor(Math.random() * 4);
+  pressedKey(arrayColor[keyRandom]);
+  playSound(arrayColor[keyRandom]);
+  arrayGame.push(arrayColor[keyRandom]);
+}
+
+function checkArray() {
+  var n = arrayClick.length - 1;
+  if (arrayClick[n] === arrayGame[n]) {
+    if (arrayClick.length === arrayGame.length) {
+      setTimeout(() => {
+        nextLevel();
+        // gameWin();
+      }, 1500);
+    }
+  } else {
+    gameOver();
+  }
+}
+
+function gameOver() {
+  playSound("wrong");
+  $("body").addClass("game-over");
+
+  $("h1").text("Game Over, Press Any Key to Restart");
+
+  setTimeout(() => {
+    $("body").removeClass("game-over");
+  }, 100);
   started = false;
+  arrayGame = [];
+  level = 0;
+}
+
+function gameWin() {
+  playSound("green");
+  playSound("yellow");
+  playSound("green");
+  $("body").addClass("game-win");
+
+  setTimeout(() => {
+    $("body").removeClass("game-win");
+  }, 100);
 }
